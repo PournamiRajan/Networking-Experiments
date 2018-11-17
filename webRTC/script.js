@@ -3,9 +3,9 @@ if (!location.hash) {
   location.hash = Math.floor(Math.random() * 0xFFFFFF).toString(16);
 }
 const roomHash = location.hash.substring(1);
-  
+
 // TODO: Replace with your own channel ID
-const drone = new ScaleDrone('tsbfFxBASbTgTBNm');
+const drone = new ScaleDrone('yiS12Ts5RdNhebyM');
 // Room name needs to be prefixed with 'observable-'
 const roomName = 'observable-' + roomHash;
 const configuration = {
@@ -15,13 +15,13 @@ const configuration = {
 };
 let room;
 let pc;
-  
-  
+
+
 function onSuccess() {};
 function onError(error) {
   console.error(error);
 };
-  
+
 drone.on('open', error => {
   if (error) {
     return console.error(error);
@@ -41,7 +41,7 @@ drone.on('open', error => {
     startWebRTC(isOfferer);
   });
 });
-  
+
 // Send signaling data via Scaledrone
 function sendMessage(message) {
   drone.publish({
@@ -49,10 +49,10 @@ function sendMessage(message) {
     message
   });
 }
-  
+
 function startWebRTC(isOfferer) {
   pc = new RTCPeerConnection(configuration);
-  
+
   // 'onicecandidate' notifies us whenever an ICE agent needs to deliver a
   // message to the other peer through the signaling server
   pc.onicecandidate = event => {
@@ -60,19 +60,22 @@ function startWebRTC(isOfferer) {
       sendMessage({'candidate': event.candidate});
     }
   };
-  
+
   // If user is offerer let the 'negotiationneeded' event create the offer
   if (isOfferer) {
     pc.onnegotiationneeded = () => {
       pc.createOffer().then(localDescCreated).catch(onError);
     }
   }
-  
+
   // When a remote stream arrives display it in the #remoteVideo element
-  pc.onaddstream = event => {
-    remoteVideo.srcObject = event.stream;
+  pc.ontrack = event => {
+    const stream = event.streams[0];
+    if (!remoteVideo.srcObject || remoteVideo.srcObject.id !== stream.id) {
+      remoteVideo.srcObject = stream;
+    }
   };
-  
+
   navigator.mediaDevices.getUserMedia({
     audio: true,
     video: true,
@@ -80,16 +83,16 @@ function startWebRTC(isOfferer) {
     // Display your local video in #localVideo element
     localVideo.srcObject = stream;
     // Add your stream to be sent to the conneting peer
-    pc.addStream(stream);
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
   }, onError);
-  
+
   // Listen to signaling data from Scaledrone
   room.on('data', (message, client) => {
     // Message was sent by us
     if (client.id === drone.clientId) {
       return;
     }
-  
+
     if (message.sdp) {
       // This is called after receiving an offer or answer from another peer
       pc.setRemoteDescription(new RTCSessionDescription(message.sdp), () => {
@@ -106,7 +109,7 @@ function startWebRTC(isOfferer) {
     }
   });
 }
-  
+
 function localDescCreated(desc) {
   pc.setLocalDescription(
     desc,
