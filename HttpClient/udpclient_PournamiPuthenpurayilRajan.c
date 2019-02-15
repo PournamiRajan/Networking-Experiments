@@ -30,9 +30,7 @@ int main(int argc, char *argv[])
 	time_t t;
 	socklen_t *addrlen 	= malloc(sizeof(struct sockaddr));
 	char *buffer 		= malloc(sizeof(char) * BUFFER_SIZE);
-	char *print_msg		= "CMPE 207 HW1 udp Pournami Puthenpurayil Rajan 669";
 
-	printf("%s\n",print_msg);
 	if (argc < 4 || argc > 4)
 	{
 		printf("Number of arguments should be 4\n");
