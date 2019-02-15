@@ -43,10 +43,8 @@ int main(int argc, char *argv[])
 	char *buffer			= malloc(sizeof(char) * BUFFER_SIZE);
 	char *recv_msg			= buffer;
 	int buffer_len			= BUFFER_SIZE;
-	char *print_msg			= "CMPE 207 HW1 webclient Pournami Puthenpurayil Rajan 669";
 	char send_msg[send_msg_size];
 
-	printf("%s\n",print_msg);
 	strcpy(send_msg, send_msg1);
 	strcat(send_msg, send_msg2);
 	strcat(send_msg, send_msg3);
